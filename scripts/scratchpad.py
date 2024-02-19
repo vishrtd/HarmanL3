@@ -35,7 +35,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
 csv_reader = ReadCsv(file_path=file_path)
-
+csv_reader.parse_date_column('datum')
 clean_data = CleanData(csv_reader.get_data())
 clean_data.melt_data('datum', ['M01AB', 'M01AE'])
 features = CreateFeatures(clean_data.get_data())
@@ -49,14 +49,15 @@ ml_df.dropna(inplace=True)
 # y = ml_df['value_70'].values
 
 # Create a column to predict 10 weeks ahead
-X_train, X_test, y_train, y_test = train_test_split(ml_df[['value']], ml_df[['value_70']], test_size=0.3)
+X_train, X_test, y_train, y_test = train_test_split(ml_df[['datum', 'value']],
+                                                    ml_df[['value_70']], test_size=0.3)
 
 # sc_X = StandardScaler()
 # X_train = sc_X.fit_transform(X_train)
 
 rfr = RandomForestRegressor()
-rfr.fit(X_train, y_train)
-y_pred = rfr.predict(X_test)
+rfr.fit(X_train[['value']], y_train)
+y_pred = rfr.predict(X_test[['value']])
 
 from sklearn.metrics import mean_squared_error, r2_score
 
@@ -65,14 +66,15 @@ r2 = r2_score(y_test, y_pred)
 
 print(f'Mean Squared Error: {mse}')
 print(f'R2 Score: {r2}')
-
+# joblib.dump(rfr, f'../models/random_forest_model_{datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.joblib')
 # We can check how much the data varies
 from matplotlib import pyplot as plt
 
 
-plt.scatter(X_test, y_test, color='black', label='Actual')
-plt.scatter(X_test, y_pred, color='blue', label='Predicted')
+# Plot only 10 data points. It will give us an idea of how much the prediction varies from the actual points.
+plt.scatter(X_test[['datum']][:10], y_test[:10], color='black', label='Actual')
+plt.scatter(X_test[['datum']][:10], y_pred[:10], color='blue', label='Predicted')
 plt.xlabel('value')
 plt.ylabel('Predictions')
-plt.legend('Harman Sales Predictions')
+plt.legend(loc='upper left')
 plt.show()
