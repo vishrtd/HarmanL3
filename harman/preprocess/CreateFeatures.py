@@ -9,6 +9,7 @@ class CreateFeatures:
             for days in num_days:
                 if self.data[col].dtype == float or self.data[col].dtype == int:
                     self.data[f'{col}_{days}'] = self.data[col].rolling(window=days).mean()
+                    self.data[f'{col}_{days}'] = self.data[f'{col}_{days}'].shift(-1*days)
 
     def get_data(self):
         return self.data
