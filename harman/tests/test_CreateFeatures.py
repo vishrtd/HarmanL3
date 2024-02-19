@@ -18,9 +18,14 @@ class TestCreateFeatures(TestCase):
         os.remove(self.file_path)
 
     def test_calculate_rolling_average(self):
+        self.assertTrue('value_1' not in self.features.data.columns)
+        self.assertTrue('value_2' not in self.features.data.columns)
         self.features.calculate_rolling_average(1, 2)
         self.assertTrue('value_1' in self.features.data.columns)
         self.assertTrue('value_2' in self.features.data.columns)
+        self.assertEquals(round(self.features.data['value_1'].sum(), 1), 15.4)
+        self.assertEquals(round(self.features.data['value_2'].sum(), 1), 13.3)
+        # print(self.features.get_data().sum())
 
     def test_get_data(self):
         self.assertIsNotNone(self.features.get_data())
